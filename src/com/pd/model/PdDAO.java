@@ -116,6 +116,45 @@ public class PdDAO {
 		}
 	}
 	
+	public List<PdDTO> selectPrice() throws SQLException {
+		Connection con=null;
+		PreparedStatement ps=null;
+		ResultSet rs=null;
+		
+		//여러 개의 레코드를 List로 묶어서 리턴
+		List<PdDTO> list = new ArrayList<>();
+		try {
+			//1,2
+			con=DbUtil.getConnection();
+			
+			//3.
+			String sql="select * from pd where price = ?";
+			ps=con.prepareStatement(sql);
+			
+			//4.
+			rs=ps.executeQuery();
+			
+			while(rs.next()) {
+				int no=rs.getInt(1);
+				String pdName=rs.getString(2);
+				int price=rs.getInt(3);
+				Timestamp regdate=rs.getTimestamp(4);
+				
+				//[1] 먼저 한 개의 레코드를 DTO로 묶어준다
+				PdDTO dto = new PdDTO(no, pdName, price, regdate);
+				
+				//[2] 각각의 DTO를 List로 묶어서 리턴한다
+				list.add(dto);
+			}
+			System.out.println("상품전체 조회 결과, list.size="+list.size());
+			
+			return list;
+		}finally {
+			DbUtil.dbClose(rs, ps, con);
+		}
+	}
+	
+	
 	public int updatePd(PdDTO dto) throws SQLException {
 		Connection con=null;
 		PreparedStatement ps=null;
@@ -125,7 +164,7 @@ public class PdDAO {
 			con=DbUtil.getConnection();
 			
 			//3
-			String sql="update pd" + "set pdname = ?, pirce = ?" + "where no = ?";
+			String sql="update pd" + "set pdname = ?, price = ?" + "where no = ?";
 			ps = con.prepareStatement(sql);
 			ps.setString(1, dto.getPdName());
 			ps.setInt(2, dto.getPrice());
