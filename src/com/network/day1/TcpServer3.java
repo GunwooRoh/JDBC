@@ -1,0 +1,69 @@
+package com.network.day1;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class TcpServer3 {
+
+	public static void main(String[] args) {
+		ServerSocket serverSocket=null;
+
+		try {
+			// 서버소켓을 생성하여 7777번 포트와 결합(bind)시킨다.
+			serverSocket=new ServerSocket(7777);
+			System.out.println(getTime()+"서버가 준비되었습니다.");			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		while(true) {
+			System.out.println(getTime()+"연결요청을 기다립니다.");
+			// 서버소켓은 클라이언트의 연결요청이 올 때까지 실행을 멈추고 계속 기다린다.
+			// 클라이언트의 연결요청이 오면 클라이언트 소켓과 통신할 새로운 소켓을 생성한다.
+			
+			DataOutputStream dos=null;
+			Socket socket = null;
+			try {
+				socket = serverSocket.accept();
+				System.out.println(getTime()+socket.getInetAddress()
+						+"로부터 연결요청이 들어왔습니다.");
+				System.out.println("getPort() : " + socket.getPort()
+					+", getLocalPort() : " + socket.getLocalPort());
+				/*
+				getPort() 가 반환하는 값 : 상대편 소켓(원격소켓)이 사용하는 포트
+				getLocalPort() 가 반환하는 값 : 소켓(서버소켓 아님) 자신이 사용하는 포트*/
+				
+				//소켓의 출력스트림을 얻는다
+				OutputStream os = socket.getOutputStream();
+				dos=new DataOutputStream(os);
+				dos.writeUTF("서버가 메시지를 보냅니다.");
+				System.out.println(getTime()+"데이터를 전송했습니다.");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}finally {
+				try {
+					if(dos!=null)dos.close();
+					if(socket!=null)socket.close();					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}//while
+	}
+
+	public static String getTime() {
+		Date d = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss] ");
+		String str=sdf.format(d);
+		return str;
+	}
+}
+
+
+
+
